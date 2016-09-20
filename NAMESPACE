@@ -1,0 +1,2 @@
+import(utils, stats, mvtnorm)
+export(sampleSize_binary, sampleSize_continuous, sampleSize_ordinal, sampleSize_data)

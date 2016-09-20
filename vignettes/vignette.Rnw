@@ -1,0 +1,194 @@
+%\VignetteIndexEntry{samplesizelogisticcasecontrol Vignette}
+%\VignettePackage{samplesizelogisticcasecontrol}
+%\VigetteDepends{samplesizelogisticcasecontrol}
+
+\documentclass[a4paper]{article}
+
+
+\begin{document}
+
+\title{samplesizelogisticcasecontrol Package}
+\maketitle
+
+<<start>>=
+library(samplesizelogisticcasecontrol)
+@
+
+\section*{Random data generation functions}
+
+Let $X_{1}$ and $X_{2}$ be two variables with a bivariate normal ditribution
+with mean (0, 0) and covariance [1, 0.5; 0.5, 2]. $X_{2}$ corresponds to
+the exposure of interest.
+Let $X_{3} = X_{1}X_{2}$ and define functions for generating random data 
+from the distribution of $(X_{1}, X_{2})$ and $(X_{1}, X_{2}, X_{3})$.
+<<data generators>>=
+mymvn <- function(n) {
+  mu    <- c(0, 0)
+  sigma <- matrix(c(1, 0.5, 0.5, 2), byrow=TRUE, nrow=2, ncol=2)
+  dat   <- rmvnorm(n, mean=mu, sigma=sigma)
+  dat
+}
+
+myF <- function(n) {
+  dat <- mymvn(n)  
+  dat <- cbind(dat, dat[, 1]*dat[, 2])
+  dat
+}
+@
+
+Generate some data
+<<data>>=
+data <- myF(200) 
+colnames(data) <- paste("X", 1:3, sep="")
+data[1:5, ]
+@
+
+\section*{Examples of univariate calculations}
+We have the logistic model $logit = \mu + \beta X$ and
+are testing $\beta = 0$.
+Suppose the disease prevalence is 0.01, the log-odds ratio for
+the exposure $X$ is 0.26 and that the exposure
+ follows a Bernoulli(p) distribution with p = 0.15.
+<<prev>>=
+prev  <- 0.01
+logOR <- 0.26
+p <- 0.15
+@
+
+Compute the sample sizes
+<<bernoulli>>=
+sampleSize_binary(prev, logOR, probXeq1=p) 
+@
+
+The same result can be obtained assuming $X$ is ordinal and passing in
+ the 2 probabilities $P(X=0)$ and $P(X=1)$.
+<<ordinal_2>>=
+sampleSize_ordinal(prev, logOR, probX=c(1-p, p)) 
+@
+
+Let $X$ be ordinal with 3 levels. The vector being passed into the
+  probX argument below is $(P(X=0), P(X=1), P(X=2))$.
+<<ordinal_3>>=
+sampleSize_ordinal(prev, logOR, probX=c(0.4, 0.35, 0.25)) 
+@
+
+Now let the exposure $X$ be $N(0, 1)$.
+<<normal01>>=
+sampleSize_continuous(prev, logOR)
+@
+
+For the univariate case with continuous exposure, we can specify the probability 
+ density function of $X$ in different ways. Consider $X$ to have a chi-squared
+ distribution with 1 degree of freedom. Note that the domain of a chi-squared 
+ pdf is from 0 to infinity, and that the var(X) = 2.
+<<chi1>>=
+sampleSize_continuous(prev, logOR, distF="dchisq(x, 1)", 
+                     distF.support=c(0,Inf), distF.var=2)
+f <- function(x) {dchisq(x, 1)}
+sampleSize_continuous(prev, logOR, distF=f, distF.support=c(0, Inf), 
+                      distF.var=2)
+@
+
+If we do not set $distF.var$, then the variance of $X$ will be approximated by numerical 
+integration and could yield slightly different results.
+<<chi2>>=
+sampleSize_continuous(prev, logOR, distF="dchisq(x, 1)", distF.support=c(0,Inf))
+@
+
+Let $X$ have the distribution defined by column $X_{1}$ in data.
+<<data_1>>=
+sampleSize_data(prev, logOR, data[, "X1", drop=FALSE]) 
+@ 
+
+
+\section*{Examples with confounders}
+
+We have the logit model $logit = \mu + \beta_{1}X_{1} + \beta_{2}X_{2}$
+and are interested in testing $\beta_{2} = 0$. 
+Here we must have log-odds ratios for $X_{1}$ and $X_{2}$, and we will
+use the distribution function mymvn defined above to generate 200 random samples.
+Note that logOR[1] corresponds to $X_{1}$ and logOR[2] corresponds to $X_{2}$. 
+<<mvn2>>=
+logOR <- c(0.1, 0.13)
+sampleSize_data(prev, logOR, mymvn(200)) 
+@
+
+Now we would like to perform a test of interaction, $\beta_{3} = 0$, where
+$logit = \mu + \beta_{1}X_{1} + \beta_{2}X_{2} + \beta_{3}X_{3}$ and
+$X_{3} = X_{1}X_{2}$. The vector of log-odds ratios must be of length 3 and
+in the same order as $(X_{1}, X_{2}, X_{3})$.
+<<interaction1>>=
+logOR <- c(0.1, 0.15, 0.11)
+sampleSize_data(prev, logOR, myF(1000)) 
+@
+
+\section*{Pilot data from a file}
+
+Suppose we want to compute sample sizes for a case-control study where we have 
+pilot data from a previous study. The pilot data is stored in the file:
+<<file>>=
+file <- system.file("sampleData", "data.txt", package="samplesizelogisticcasecontrol")
+file
+@
+
+Here the exposure variable is "Treatment", 
+and "Gender\_Male" is a dummy variable for the confounder gender. We will 
+use the data from only the controls and define a new variable of interest
+which is the interaction of gender and treatment. In our model, both
+gender and treatment will be confounders.
+First, read in the data.
+<<file_read>>=
+data <- read.table(file, header=1, sep="\t")
+@
+
+Create the interaction variable
+<<create_inter>>=
+data[, "Interaction"] <- data[, "Gender_Male"]*data[, "Treatment"]
+data[1:5, ]
+@
+
+Now subset the data to use only the controls
+<<subset>>=
+temp <- data[, "Casecontrol"] %in% 0
+data <- data[temp, ]
+@
+
+The data that gets passed in should only contain the columns that will be used
+in the analysis with the variable of interest being the last column.
+<<columns>>=
+vars <- c("Gender_Male", "Treatment", "Interaction")
+data <- data[, vars] 
+@
+
+Define the log-odds ratios for gender, treatment, and the interaction of
+gender and treatment. The order of these log-odds ratios must match
+the order of the columns in the data.
+<<logOR_int>>=
+logOR <- c(0.1, 0.13, 0.27)
+@
+
+Compute the sample sizes
+<<samp_int1>>=
+sampleSize_data(prev, logOR, data) 
+@
+
+Note that the same results can be obtained by not reading in the data and creating
+a new interaction variable, but by setting the input argument
+of data to be of type $file.list$.
+<<file_list>>=
+data.list <- list(file=file, header=1, sep="\t",
+            covars=c("Gender_Male", "Treatment"),
+            exposure=c("Gender_Male", "Treatment"))
+data.list$subsetData <- list(list(var="Casecontrol", operator="%in%", value=0))
+sampleSize_data(prev, logOR, data.list) 
+@
+
+
+\section*{Session Information}
+<<sessionInfo>>=
+sessionInfo()
+@ 
+
+\end{document}
+
+
