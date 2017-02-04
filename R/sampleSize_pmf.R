@@ -93,14 +93,24 @@ getVar_pmf <- function(xvals, px) {
 } # END: getVar_pmf
 
 # Variance
-getVar_dist_pmf <- function(p, xvals, lam, info) {
+getVar_dist_pmf <- function(px1, px0, xvals, lam, info) {
   
-  Varx <- getVar_pmf(xvals, p)
+  c <- lam*(1-lam)
+
+  #Varx <- getVar_pmf(xvals, p)
+  #Var0beta <- 1/(c*Varx)
+  #Var0T    <- Varx/c
 
   # NULL hyothesis
-  c        <- lam*(1-lam)
-  Var0beta <- 1/(c*Varx)
-  Var0T    <- Varx/c
+  temp     <- xvals*(lam*px1 + (1-lam)*px0)
+  mu1bar   <- sum(temp)       # E(X)
+  mu2bar   <- sum(xvals*temp) # E(X^2) 
+  Iaa0     <- c
+  Iab0     <- c*mu1bar
+  Ibb0     <- c*mu2bar
+  Ibba0    <- Ibb0-(Iab0*Iab0)/Iaa0
+  Var0beta <- 1/Ibba0
+  Var0T    <- Ibba0/c^2
 
   # Alternative
   Ibba     <- info[2,2] - (info[1,2]*info[1,2])/info[1,1]
@@ -136,7 +146,7 @@ ss_uni_dist_pmf <- function(prev, logOR, p, xvals, size.2sided=0.05,
   info <- getInfo_dist_pmf(alphacc, beta, lam, prev, p, xvals, px1, px0)
 
   # Get the variances for the Wald and score test
-  temp           <- getVar_dist_pmf(p, xvals, lam, info)
+  temp           <- getVar_dist_pmf(px1, px0, xvals, lam, info)
   var.wald.null  <- temp$var.wald.null
   var.wald.alt   <- temp$var.wald.alt
   var.score.null <- temp$var.score.null

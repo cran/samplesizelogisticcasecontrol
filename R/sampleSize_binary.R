@@ -1,5 +1,5 @@
 # Function that uniroot function calls for computing intercept in general pop
-#  fort the case of a binary exposure and no data
+#  for the case of a binary exposure and no data
 f1_dist_bin <- function(alpha, beta, prev, p) {
 
   ret <- prev - p*px(1, alpha, beta) - (1-p)*px(0, alpha, beta)
@@ -92,19 +92,25 @@ getInfo_dist_bin <- function(alphacc, beta, lam, prev, p, px1, px0) {
 } # END: getInfo_dist_bin
 
 # Variance
-getVar_dist_bin <- function(p, lam, info) {
+getVar_dist_bin <- function(px1, px0, lam, info) {
   
-  Varx <- p*(1-p)
+  c  <- lam*(1-lam)
+  c2 <- c*c
 
   # NULL hyothesis
-  c        <- lam*(1-lam)
-  Var0beta <- 1/(c*Varx)
-  Var0T    <- Varx/c
+  mu1bar   <- lam*px1 + (1-lam)*px0
+  mu2bar   <- mu1bar  #E(X)=E(X^2) because X=0 or 1
+  Iaa0     <- c
+  Iab0     <- c*mu1bar
+  Ibb0     <- c*mu2bar
+  Ibba0    <- Ibb0-(Iab0*Iab0)/Iaa0
+  Var0beta <- 1/Ibba0
+  Var0T    <- Ibba0/c2
 
   # Alternative
   Ibba     <- info[2,2] - (info[1,2]*info[1,2])/info[1,1]
   Varabeta <- 1/Ibba
-  VaraT    <- Ibba/c^2
+  VaraT    <- Ibba/c2
 
   list(var.wald.null=Var0beta, var.wald.alt=Varabeta,
        var.score.null=Var0T, var.score.alt=VaraT)
@@ -135,7 +141,7 @@ ss_uni_dist_bin <- function(prev, logOR, p, size.2sided=0.05, power=0.9, lam=0.5
   info <- getInfo_dist_bin(alphacc, beta, lam, prev, p, px1, px0)
 
   # Get the variances for the Wald and score test
-  temp           <- getVar_dist_bin(p, lam, info)
+  temp           <- getVar_dist_bin(px1, px0, lam, info)
   var.wald.null  <- temp$var.wald.null
   var.wald.alt   <- temp$var.wald.alt
   var.score.null <- temp$var.score.null

@@ -23,6 +23,19 @@ f6 <- function(x,alpha, beta, pdf) {
   x*pdf(x)*(1-px(x,alpha, beta)) #x*f(x)*(1-px)
 }
  
+mux <- function(x, alphacc, alphastar, beta, prev, lam, pdf) {
+  ret <- lam*x*fx1(x, alphastar, beta, prev, pdf) + 
+         (1-lam)*x*fx0(x, alphastar, beta, prev, pdf)
+  ret
+}
+mux2 <- function(x, alphacc, alphastar, beta, prev, lam, pdf) {
+  x2  <- x*x
+  ret <- lam*x2*fx1(x, alphastar, beta, prev, pdf) + 
+         (1-lam)*x2*fx0(x, alphastar, beta, prev, pdf)
+  ret
+}
+
+
 # Function to compute the intercept in general population
 getPopInt_dist_f <- function(beta, prev, pdf, pdf.range, interval=c(-7, 7), tol=0.0001) {
 
@@ -70,7 +83,7 @@ getCCInt_dist_f <- function(alphastar, beta, prev, lam, pdf, pdf.range, f3Cont,
 } # END: getCCInt_dist_f
 
 # Compute information matrix
-getInfo_dist_f <- function(alphacc, alphastar, beta, prev, lam, rangeF, pdf) {
+getInfo_dist_f_alt <- function(alphacc, alphastar, beta, prev, lam, rangeF, pdf) {
 
   Intaa <- function(x,alphacc,alphastar,beta,prev,lam) {
     tempx <- px(x,alphacc,beta)
@@ -109,20 +122,26 @@ getInfo_dist_f <- function(alphacc, alphastar, beta, prev, lam, rangeF, pdf) {
 
   info
 
-} # END: getInfo_dist_f
+} # END: getInfo_dist_f_alt
 
 # Variance
-getVar_dist_f <- function(lam, info, Varx) {
+getVar_dist_f <- function(lam, info, mu1out, mu2out) {
+
+  c  <- lam*(1-lam)
+  c2 <- c*c
 
   # NULL hyothesis
-  c        <- lam*(1-lam)
-  Var0beta <- 1/(c*Varx)
-  Var0T    <- Varx/c
+  Iaa0     <- c
+  Iab0     <- c*mu1out
+  Ibb0     <- c*mu2out
+  Ibba0    <- Ibb0-(Iab0*Iab0)/Iaa0
+  Var0beta <- 1/Ibba0
+  Var0T    <- Ibba0/c2
 
   # Alternative
   Ibba     <- info[2,2] - (info[1,2]*info[1,2])/info[1,1]
   Varabeta <- 1/Ibba
-  VaraT    <- Ibba/c^2
+  VaraT    <- Ibba/c2
 
   list(var.wald.null=Var0beta, var.wald.alt=Varabeta,
        var.score.null=Var0T, var.score.alt=VaraT)
@@ -179,8 +198,8 @@ ss_uni_dist_f <- function(prev, logOR, pdf, pdf.range, size.2sided=0.05,
 
   # Save the str for generating random values 
   rpdf.str <- temp$rand
-  varX     <- getVarX(pdf.var, rpdf.str, mypdf, n=pdf.var.n, lower=pdf.range[1],
-                      upper=pdf.range[2]) 
+  #varX     <- getVarX(pdf.var, rpdf.str, mypdf, n=pdf.var.n, lower=pdf.range[1],
+  #                    upper=pdf.range[2]) 
   beta     <- logOR
 
   # Get the intercept in general population
@@ -191,17 +210,19 @@ ss_uni_dist_f <- function(prev, logOR, pdf, pdf.range, size.2sided=0.05,
                      interval=interval, tol=tol)
 
   # Compute information matrix
-  info <- getInfo_dist_f(alphacc, alphastar, beta, prev, lam, pdf.range, mypdf)
+  info.alt <- getInfo_dist_f_alt(alphacc, alphastar, beta, prev, lam, pdf.range, mypdf)
 
   a    <- pdf.range[1]
   b    <- pdf.range[2]
-  #mux1 <- integrate(f5,a,b,alphastar,beta,mypdf)$value/prev  # mean x in cases
-  #mux0 <- integrate(f6,a,b,alphastar,beta,mypdf)$value/(1-prev)  #mean x in controls
   mux1 <- myintegrate_PDF(f5,a,b,method=2,alphastar,beta,mypdf)/prev # mean x in cases
   mux0 <- myintegrate_PDF(f6,a,b,method=2,alphastar,beta,mypdf)/(1-prev) #mean x in controls
 
+  # For the NULL
+  mu1out <- myintegrate_PDF(mux, a,b,method=2,alphacc,alphastar,beta,prev,lam,mypdf)
+  mu2out <- myintegrate_PDF(mux2,a,b,method=2,alphacc,alphastar,beta,prev,lam,mypdf)
+
   # Get the variances for the Wald and score test
-  temp           <- getVar_dist_f(lam, info, varX)
+  temp           <- getVar_dist_f(lam, info.alt, mu1out, mu2out)
   var.wald.null  <- temp$var.wald.null
   var.wald.alt   <- temp$var.wald.alt
   var.score.null <- temp$var.score.null
@@ -221,9 +242,6 @@ ss_uni_dist_f <- function(prev, logOR, pdf, pdf.range, size.2sided=0.05,
        ss.score.1=ss.score.1, ss.score.2=ss.score.2)
 
 } # END: ss_uni_dist_f
-
-
-
 
 
 ##################
