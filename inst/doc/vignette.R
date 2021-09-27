@@ -122,15 +122,15 @@ data[1:5, ]
 ###################################################
 ### code chunk number 17: subset
 ###################################################
-temp <- data[, "Casecontrol"] %in% 0
-data <- data[temp, ]
+temp  <- data[, "Casecontrol"] %in% 0
+data2 <- data[temp, ]
 
 
 ###################################################
 ### code chunk number 18: columns
 ###################################################
-vars <- c("Gender_Male", "Treatment", "Interaction")
-data <- data[, vars] 
+vars  <- c("Gender_Male", "Treatment", "Interaction")
+data2 <- data2[, vars] 
 
 
 ###################################################
@@ -142,7 +142,7 @@ logOR <- c(0.1, 0.13, 0.27)
 ###################################################
 ### code chunk number 20: samp_int1
 ###################################################
-sampleSize_data(prev, logOR, data) 
+sampleSize_data(prev, logOR, data2) 
 
 
 ###################################################
@@ -156,7 +156,28 @@ sampleSize_data(prev, logOR, data.list)
 
 
 ###################################################
-### code chunk number 22: sessionInfo
+### code chunk number 22: glm
+###################################################
+fit <- glm(Casecontrol ~ Gender_Male + Treatment + Interaction, data=data, family=binomial())
+summary(fit)
+
+
+###################################################
+### code chunk number 23: coef
+###################################################
+coef     <- fit$coefficients
+logOR    <- coef[-1]
+logOR
+
+
+###################################################
+### code chunk number 24: power
+###################################################
+power_data(prev, logOR, data[, vars], sampleSize=15000, cc.ratio=0.1)
+
+
+###################################################
+### code chunk number 25: sessionInfo
 ###################################################
 sessionInfo()
 

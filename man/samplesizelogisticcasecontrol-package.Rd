@@ -1,12 +1,14 @@
 % --- Source file: sampleSize.Rd ---
-\name{samplesizelogisticcasecontrol}
+\name{samplesizelogisticcasecontrol-package}
 \alias{samplesizelogisticcasecontrol}
 \docType{package}
 \title{
-Sample size calculations for case-control studies
+Sample size and power calculations for case-control studies
 }
 \description{This package can be used to calculate the required sample size needed for 
-  case-control studies to have sufficient power. To calculate the sample size, one needs to
+  case-control studies to have sufficient power, or calculate the power of a
+  case-control study for a given sample size. 
+  To calculate the sample size, one needs to
   specify the significance level \eqn{\alpha}{alpha}, power \eqn{\gamma}{gamma}, and the 
   hypothesized non-null \eqn{\theta}{theta}. Here \eqn{\theta}{theta} is a log odds ratio
   for an exposure main effect or \eqn{\theta}{theta} is an interaction effect on the 
@@ -19,13 +21,15 @@ Sample size varies inversely with
 \details{
 The main functions in the package are for different types of exposure variables, where the
 exposure variable is the variable of interest in a hypothesis test. 
-The function \code{\link{sampleSize_binary}} can be used for a binary exposure variable (X = 0 or 1), 
-while the function \code{\link{sampleSize_ordinal}} is a more general function that can be used for 
+The functions \code{\link{sampleSize_binary}} and \code{\link{power_binary}}
+ can be used for a binary exposure variable (X = 0 or 1), 
+while the functions \code{\link{sampleSize_ordinal}} and \code{\link{power_ordinal}} 
+ is a more general function that can be used for 
 an ordinal exposure variable (X takes the values 0, 1, ..., k). 
-\code{\link{sampleSize_continuous}} is useful for a continuous exposure variable and
-\code{\link{sampleSize_data}} can be used when pilot data is available that defines
+\code{\link{sampleSize_continuous}} and \code{\link{power_continuous}} are useful for a continuous exposure variable and
+\code{\link{sampleSize_data}} and \code{\link{power_data}} can be used when pilot data is available that defines
 the distribution of the exposure and other confounding variables. Each function will return the
-sample sizes for a Wald-type test and a score test. When there are no adjustments for confounders, the user can 
+sample sizes or power for a Wald-type test and a score test. When there are no adjustments for confounders, the user can 
 specify a general distribution for the exposure variable. With confounders, either pilot data or a function to 
 generate random samples from the multivariate distribution of the confounders and exposure variable must
 be given. 
@@ -58,6 +62,10 @@ If the parameter of interest, \eqn{\theta}{theta},
 Gail, M.H. and Haneuse, S. Power and sample size for case-control studies.  
 In Handbook of Statistical Methods for Case-Control Studies.  
 Editors:  Ornulf Borgan, Norman Breslow, Nilanjan Chatterjee, Mitchell Gail, Alastair Scott, Christopher Wild.  
-Chapman and Hall/CRC, Taylor and Francis Group, New York, in press. 
+Chapman and Hall/CRC, Taylor and Francis Group, New York, 2018, pages 163-187.
+
+Gail, M. H and Haneuse, S. Power and sample size for multivariate logistic modeling of unmatched case-control studies. 
+Statistical Methods in Medical Research. 2019;28(3):822-834, \cr
+ https://doi.org/10.1177/0962280217737157
 }
 

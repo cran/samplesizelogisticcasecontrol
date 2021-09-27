@@ -149,15 +149,15 @@ data[1:5, ]
 
 Now subset the data to use only the controls
 <<subset>>=
-temp <- data[, "Casecontrol"] %in% 0
-data <- data[temp, ]
+temp  <- data[, "Casecontrol"] %in% 0
+data2 <- data[temp, ]
 @
 
 The data that gets passed in should only contain the columns that will be used
 in the analysis with the variable of interest being the last column.
 <<columns>>=
-vars <- c("Gender_Male", "Treatment", "Interaction")
-data <- data[, vars] 
+vars  <- c("Gender_Male", "Treatment", "Interaction")
+data2 <- data2[, vars] 
 @
 
 Define the log-odds ratios for gender, treatment, and the interaction of
@@ -169,7 +169,7 @@ logOR <- c(0.1, 0.13, 0.27)
 
 Compute the sample sizes
 <<samp_int1>>=
-sampleSize_data(prev, logOR, data) 
+sampleSize_data(prev, logOR, data2) 
 @
 
 Note that the same results can be obtained by not reading in the data and creating
@@ -181,6 +181,26 @@ data.list <- list(file=file, header=1, sep="\t",
             exposure=c("Gender_Male", "Treatment"))
 data.list$subsetData <- list(list(var="Casecontrol", operator="%in%", value=0))
 sampleSize_data(prev, logOR, data.list) 
+@
+
+\section*{Power calculation using pilot data}
+
+Using the pilot data, estimate the log-odds ratios from a logistic regression:
+<<glm>>=
+fit <- glm(Casecontrol ~ Gender_Male + Treatment + Interaction, data=data, family=binomial())
+summary(fit)
+@
+
+Extract the estimates needed
+<<coef>>=
+coef     <- fit$coefficients
+logOR    <- coef[-1]
+logOR
+@
+
+Estimate the power assuming a study size of 15000 subjects with 10 percent of them cases.
+<<power>>=
+power_data(prev, logOR, data[, vars], sampleSize=15000, cc.ratio=0.1)
 @
 
 

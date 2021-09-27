@@ -1,2 +1,3 @@
 import(utils, stats, mvtnorm)
-export(sampleSize_binary, sampleSize_continuous, sampleSize_ordinal, sampleSize_data)
+export(sampleSize_binary, sampleSize_continuous, sampleSize_ordinal, sampleSize_data,
+       power_binary, power_continuous, power_ordinal, power_data)

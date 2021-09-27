@@ -114,17 +114,22 @@ check_pdf <- function(pdf) {
 
 # Function top check for errors
 checkForErrors <- function(prev, logOR, size.2sided, power, cc.ratio, interval,
-                           tol, n.samples) {
+                           tol, n.samples, sampleSize=NULL) {
 
   if ((prev <= 0) || (prev >= 1)) stop("ERROR: with prevalence")
   temp <- !is.finite(logOR)
   if (any(temp)) stop("ERROR: all logOR must be finite")
   if ((size.2sided <= 0) || (size.2sided >= 1)) stop("ERROR: size.2sided must be between 0 and 1")
-  if ((power <= 0) || (power >= 1)) stop("ERROR: power must be between 0 and 1")
+  if (!is.null(power)) {
+    if ((power <= 0) || (power >= 1)) stop("ERROR: power must be between 0 and 1")
+  }
   if (length(interval) != 2) stop("ERROR: with interval")
   if ((tol <= 0) || (tol >= 1)) stop("ERROR: tol must be between 0 and 1")
   if ((cc.ratio <= 0) || (cc.ratio >= 1)) stop("ERROR: cc.ratio must be between 0 and 1")
   if (n.samples < 10) stop("ERROR: n.samples is too small")
+  if (!is.null(sampleSize)) {
+    if (sampleSize < 10) stop("ERROR: sampleSize is too small")
+  }
 
   NULL
 

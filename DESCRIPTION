@@ -1,13 +1,13 @@
 Package: samplesizelogisticcasecontrol
-Title: Sample Size Calculations for Case-Control Studies
-Version: 0.0.6
-Date: 2017-01-31
+Title: Sample Size and Power Calculations for Case-Control Studies
+Version: 2.0.0
+Date: 2021-09-24
 Author: Mitchell H. Gail
-Description: To determine sample size for case-control studies to be analyzed using logistic regression.
+Description: To determine sample size or power for case-control studies to be analyzed using logistic regression.
 Maintainer: William Wheeler <WheelerB@imsweb.com>
 Depends: mvtnorm
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2017-01-31 21:03:28 UTC; wheelerwi
+Packaged: 2021-09-24 12:59:10 UTC; wheelerwi
 Repository: CRAN
-Date/Publication: 2017-02-04 06:49:33
+Date/Publication: 2021-09-27 12:50:02 UTC
