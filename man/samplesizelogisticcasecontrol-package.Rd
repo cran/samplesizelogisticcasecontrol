@@ -1,6 +1,7 @@
 % --- Source file: sampleSize.Rd ---
 \name{samplesizelogisticcasecontrol-package}
 \alias{samplesizelogisticcasecontrol}
+\alias{samplesizelogisticcasecontrol-package}
 \docType{package}
 \title{
 Sample size and power calculations for case-control studies

@@ -990,7 +990,7 @@ check.temp.list <- function(temp.list) {
     # Change the warn option so a warning turns to an error
     options(warn=2)
     temp <- try(dir(temp.list$dir), silent=TRUE)
-    if (class(temp) == "try-error") {
+    if ("try-error" %in% class(temp)) {
       temp <- paste("ERROR: the directory ", temp.list$dir, " does not exist", sep="")
       options(warn=warn)
       stop(temp)
@@ -1317,7 +1317,7 @@ matrix2rda <- function(infile, outfile, delimiter="\t", stopOnError=1) {
   options(warn=2)
   dat <- try(scanFile(infile, tlist), silent=TRUE)
   options(warn=1)
-  if (class(dat) == "try-error") {
+  if ("try-error" %in% class(dat)) {
     temp <- paste("ERROR with file ", infile, sep="")
     if (stopOnError) stop(temp)
     return(0)
@@ -2096,7 +2096,7 @@ sort2D <- function(data, col, dec=FALSE, fun=NULL) {
 } # END: sort2D
 
 # Function to update snp.list
-update.snp.list <- function(snp.list, where=0) {
+update_snp.list <- function(snp.list, where=0) {
 
   # where    Integer specifying where in the program
 
@@ -2129,7 +2129,7 @@ update.snp.list <- function(snp.list, where=0) {
 
   snp.list
 
-} # END: update.snp.list
+} # END: update_snp.list
 
 # Function to return a temporary file name
 getTempfile <- function(dir, prefix=NULL, ext=NULL) {
@@ -2539,30 +2539,30 @@ strataMatrix <- function(strata) {
 
 } # END: strataMat
 
-rep.cols <- function(vec, times) {
+rep_cols <- function(vec, times) {
   # Function to replicate columns
   len      <- length(vec)
   dim(vec) <- c(len, 1)
   mat      <- rep(vec, times)
   dim(mat) <- c(len, times)
   mat
-} # END: rep.cols
+} # END: rep_cols
 
-rep.mat <- function(scalar, nrow=NULL, ncol=NULL)
+rep_mat <- function(scalar, nrow=NULL, ncol=NULL)
 {
   mat      <- rep(scalar, each=nrow, times=ncol)
   dim(mat) <- c(nrow, ncol)
   mat
 }
 
-rep.rows <- function(vec, times) {
+rep_rows <- function(vec, times) {
   # Function to replicate rows
   len      <- length(vec)
   dim(vec) <- c(1, len)
   mat      <- rep(vec, each=times)
   dim(mat) <- c(times, len)
   mat
-} # END: rep.rows
+} # END: rep_rows
 
 # Function to merge 2 data frames 
 mergeData <- function(base.data, new.data, new.vars, 

@@ -318,7 +318,7 @@ table2Format <- function(infile, p) {
       infile <- scanFile(fid, tlist)
     
       # Check for error
-      if (class(infile) == "try-error") {
+      if ("try-error" %in% class(infile)) {
         if (readFlag) {
           break
         } else {
@@ -422,7 +422,7 @@ table2Format <- function(infile, p) {
     temp <- try(apply(infile, 2, f2), silent=TRUE)
 
     # Check for error
-    if (class(temp) == "try-error") {
+    if ("try-error" %in% class(temp)) {
       # It failed, so loop over each column
       temp <- character(nc)
 
